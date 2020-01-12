@@ -178,7 +178,7 @@ parameter CONF_STR = {
 	"h4H3RI,Restore state (F1);",
 	"h4H3-;",
 	"O1,Aspect Ratio,3:2,16:9;",
-	"O9A,Desaturate,Off,Level 1,Simple GBA Colors,Real GBA Colors;",
+	"O9A,Desaturate,Off,Level 1,Fake GBA Colors,Real GBA Colors;",
 	"OB,Sync core to video,Off,On;",
 	"O24,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
 	"O78,Stereo Mix,None,25%,50%,100%;", 
