@@ -178,7 +178,7 @@ parameter CONF_STR = {
 	"h4H3RI,Restore state (F1);",
 	"h4H3-;",
 	"O1,Aspect Ratio,3:2,16:9;",
-	"O9A,Desaturate,Off,Level 1,Level 2,Level 3;",
+	"O9A,Desaturate,Off,Level 1,Simple GBA Colors,Real GBA Colors;",
 	"OB,Sync core to video,Off,On;",
 	"O24,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
 	"O78,Stereo Mix,None,25%,50%,100%;", 
@@ -811,31 +811,50 @@ wire [7:0] b_in = {b,b[4:2]};
 //wire [7:0] luma = r_in[7:3] + g_in[7:1] + g_in[7:2] + b_in[7:3];
 wire [7:0] luma = r_in[7:2] + g_in[7:1] + g_in[7:3] + b_in[7:3];
 
-wire [7:0] r_out, g_out, b_out;
+wire [7:0] r_sat, g_sat, b_sat;
 always_comb begin
 	case(status[10:9])
 		0: begin
-				r_out = r_in;
-				g_out = g_in;
-				b_out = b_in;
+				r_sat = r_in;
+				g_sat = g_in;
+				b_sat = b_in;
 			end
 		1: begin
-				r_out = r_in[7:1] + r_in[7:2] + luma[7:2];
-				g_out = g_in[7:1] + g_in[7:2] + luma[7:2];
-				b_out = b_in[7:1] + b_in[7:2] + luma[7:2];
+				r_sat = r_in[7:1] + r_in[7:2] + luma[7:2];
+				g_sat = g_in[7:1] + g_in[7:2] + luma[7:2];
+				b_sat = b_in[7:1] + b_in[7:2] + luma[7:2];
 			end
 		2: begin
-				r_out = r_in[7:1] + luma[7:1];
-				g_out = g_in[7:1] + luma[7:1];
-				b_out = b_in[7:1] + luma[7:1];
+		
+//	gba_r = lin_r[9:1] + lin_r[9:2] + lin_r[9:3] + lin_g[9:3];
+//	gba_g = lin_g[9:1] + lin_g[9:3] + lin_r[9:3] + lin_b[9:2];
+//	gba_b = lin_b[9:1] + lin_b[9:2] + lin_r[9:3] + lin_r[9:4] + lin_g[9:4];
+				r_sat = r_in[7:1] + r_in[7:2] + r_in[7:3] + g_in[7:3];
+				g_sat = g_in[7:1] + g_in[7:3] + r_in[7:3] + b_in[7:2];
+				b_sat = b_in[7:1] + b_in[7:2] + r_in[7:3] + r_in[7:4] + g_in[7:4];
 			end
 		3: begin
-				r_out = luma[7:1] + luma[7:2] + r_in[7:2];
-				g_out = luma[7:1] + luma[7:2] + g_in[7:2];
-				b_out = luma[7:1] + luma[7:2] + b_in[7:2];
+				//r_out = r_in[7:1] + r_in[7:2] + r_in[7:3] + g_in[7:3];
+				//g_out = g_in[7:1] + g_in[7:3] + r_in[7:3] + b_in[7:2];
+				//b_out = b_in[7:1] + b_in[7:2] + r_in[7:3] + r_in[7:4] + g_in[7:4];
+				r_sat = r_in;
+				g_sat = g_in;
+				b_sat = b_in;
 			end
 	endcase
 end
+
+wire [7:0] r_out, g_out, b_out;
+gba_colors gba_color_mixer
+(
+	.enable( &status[10:9]),
+	.r(r_sat),
+	.g(g_sat),
+	.b(b_sat),
+	.r_out(r_out),
+	.g_out(g_out),
+	.b_out(b_out)
+);
 
 video_mixer #(.LINE_LENGTH(520), .GAMMA(1)) video_mixer
 (
@@ -856,6 +875,7 @@ video_mixer #(.LINE_LENGTH(520), .GAMMA(1)) video_mixer
 	.G(g_out),
 	.B(b_out)
 );
+
 
 
 /////////////////////////  STATE SAVE/LOAD  /////////////////////////////
